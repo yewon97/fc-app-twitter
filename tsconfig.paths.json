@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@/components/*": ["src/components/*"],
+      "@/firebaseApp/*": ["src/firebaseApp/*"],
+      "@/pages/*": ["src/pages/*"],
+      "@/context/*": ["src/context/*"]
+    }
+  }
+}
