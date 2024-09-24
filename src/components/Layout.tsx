@@ -1,3 +1,4 @@
+import MenuList from "@/components/Menu";
 import { ReactNode } from "react";
 
 type Props = {
@@ -5,7 +6,12 @@ type Props = {
 };
 
 const Layout = ({ children }: Props) => {
-  return <div className="layout">{children}</div>;
+  return (
+    <div className="layout">
+      {children}
+      <MenuList />
+    </div>
+  );
 };
 
 export default Layout;
