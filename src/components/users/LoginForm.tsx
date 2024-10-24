@@ -10,17 +10,26 @@ import {
 import { app } from "@/firebaseApp";
 import { toast } from "react-toastify";
 
+interface FormProps {
+  email: string;
+  password: string;
+}
+
 export default function LoginForm() {
-  const [error, setError] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
   const navigate = useNavigate();
+
+  const [form, setForm] = useState<FormProps>({
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState<string>("");
 
   const onSubmit = async (e: any) => {
     e.preventDefault();
+
     try {
       const auth = getAuth(app);
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth, form.email, form.password);
       navigate("/");
       toast.success("성공적으로 로그인이 되었습니다.");
     } catch (error: any) {
@@ -29,12 +38,10 @@ export default function LoginForm() {
   };
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const {
-      target: { name, value },
-    } = e;
+    const { name, value } = e.target;
 
     if (name === "email") {
-      setEmail(value);
+      setForm({ ...form, email: value });
       const validRegex =
         /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
 
@@ -46,7 +53,7 @@ export default function LoginForm() {
     }
 
     if (name === "password") {
-      setPassword(value);
+      setForm({ ...form, password: value });
 
       if (value?.length < 8) {
         setError("비밀번호는 8자리 이상 입력해주세요");
@@ -57,9 +64,7 @@ export default function LoginForm() {
   };
 
   const onClickSocialLogin = async (e: any) => {
-    const {
-      target: { name },
-    } = e;
+    const { name } = e.target;
 
     let provider;
     const auth = getAuth(app);
@@ -96,7 +101,7 @@ export default function LoginForm() {
           type="text"
           name="email"
           id="email"
-          value={email}
+          value={form.email}
           required
           onChange={onChange}
         />
@@ -107,7 +112,7 @@ export default function LoginForm() {
           type="password"
           name="password"
           id="password"
-          value={password}
+          value={form.password}
           onChange={onChange}
           required
         />
