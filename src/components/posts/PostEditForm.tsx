@@ -10,6 +10,9 @@ export default function PostEditForm() {
   const params = useParams();
   const navigate = useNavigate();
 
+  const [hashtag, setHashtag] = useState("");
+  const [hashtags, setHashtags] = useState<string[]>([]);
+
   const [formData, setFormData] = useState({
     content: "",
     file: null,
@@ -28,6 +31,7 @@ export default function PostEditForm() {
       content: postSnap.data()?.content,
       file: postSnap.data()?.file,
     });
+    setHashtags(postSnap.data()?.hashtags);
   }, [params.id]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,6 +56,7 @@ export default function PostEditForm() {
         await updateDoc(postRef, {
           content: formData.content,
           file: formData.file,
+          hashtags: hashtags,
         });
       }
 
@@ -67,6 +72,29 @@ export default function PostEditForm() {
     setFormData({ ...formData, [name]: value });
   };
 
+  const handleHashtagChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setHashtag(value.trim());
+  };
+
+  const handleHashtagKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const target = e.target as HTMLInputElement;
+    if (e.code === "Space" && target.value.trim() !== "") {
+      if (hashtags.includes(target.value?.trim())) {
+        toast.error("이미 존재하는 태그입니다.");
+      } else {
+        setHashtags((prev) =>
+          prev?.length > 0 ? [...prev, hashtag] : [hashtag],
+        );
+        setHashtag("");
+      }
+    }
+  };
+
+  const handleRemoveTag = (hashtag: string) => {
+    setHashtags(hashtags.filter((tag) => tag !== hashtag));
+  };
+
   return (
     <form action="" className="post-form" onSubmit={handleSubmit}>
       <textarea
@@ -78,6 +106,27 @@ export default function PostEditForm() {
         value={formData.content}
         required
       ></textarea>
+      <div className="post-form__hashtags">
+        {hashtags?.map((hashtag, index) => (
+          <span
+            key={index}
+            className="post-form__hashtags-tag"
+            onClick={() => handleRemoveTag(hashtag)}
+          >
+            #{hashtag}
+          </span>
+        ))}
+        <input
+          type="text"
+          className="post-form__input"
+          id="hashtag"
+          name="hashtag"
+          placeholder="해시태그 + 스페이스바 입력"
+          onChange={handleHashtagChange}
+          onKeyUp={handleHashtagKeyUp}
+          value={hashtag}
+        />
+      </div>
       <div className="post-form__submit-area">
         <label htmlFor="file-input" className="post-form__file">
           <FiImage className="post-form__file-icon" />
