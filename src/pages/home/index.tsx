@@ -1,5 +1,9 @@
 import PostForm from "@/components/posts/PostForm";
 import PostBox from "@/components/PostBox";
+import { useContext, useEffect, useState } from "react";
+import AuthContext from "@/components/context/AuthContext";
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import { db } from "@/firebaseApp";
 
 export interface PostProps {
   id: string;
@@ -13,38 +17,26 @@ export interface PostProps {
   comments?: any;
 }
 
-const posts: PostProps[] = [
-  {
-    id: "1",
-    email: "test1@test.com",
-    content: "Hello, world!",
-    createdAt: "2021-01-01",
-    uid: "1",
-  },
-  {
-    id: "2",
-    email: "test2@test.com",
-    content: "This is a test post.",
-    createdAt: "2021-02-01",
-    uid: "2",
-  },
-  {
-    id: "3",
-    email: "test3@test.com",
-    content: "Another example post.",
-    createdAt: "2021-03-01",
-    uid: "3",
-  },
-  {
-    id: "4",
-    email: "test4@test.com",
-    content: "Learning TypeScript is fun!",
-    createdAt: "2021-04-01",
-    uid: "4",
-  },
-];
-
 export default function HomePage() {
+  const [posts, setPosts] = useState<PostProps[]>([]);
+  const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (user) {
+      let postsRef = collection(db, "posts");
+      let postsQuery = query(postsRef, orderBy("createdAt", "desc"));
+
+      onSnapshot(postsQuery, (snapshot) => {
+        let dataObj = snapshot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        }));
+
+        setPosts(dataObj as PostProps[]);
+      });
+    }
+  }, []);
+
   return (
     <div className="home">
       <div className="home__top">
@@ -61,9 +53,13 @@ export default function HomePage() {
       {/* Tweet posts */}
       <div>
         <div className="post">
-          {posts?.map((post) => (
-            <PostBox key={post?.id} post={post} />
-          ))}
+          {posts.length > 0 ? (
+            posts?.map((post) => <PostBox key={post?.id} post={post} />)
+          ) : (
+            <div className="post__no-posts">
+              <div className="post__text">게시글이 없습니다.</div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -3,12 +3,15 @@ import { FaUserCircle } from "react-icons/fa";
 import { AiFillHeart } from "react-icons/ai";
 import { FaRegComment } from "react-icons/fa";
 import { PostProps } from "@/pages/home";
+import AuthContext from "@/components/context/AuthContext";
+import { useContext } from "react";
 
 interface PostBoxProps {
   post: PostProps;
 }
 
 export default function PostBox({ post }: PostBoxProps) {
+  const { user } = useContext(AuthContext);
   const handleDelete = () => {
     console.log("delete");
   };
@@ -35,14 +38,20 @@ export default function PostBox({ post }: PostBoxProps) {
       </Link>
       <div className="post__box-footer">
         {/* post.uid === user.uid 일 때 */}
-        <>
-          <button type="button" className="post__delete" onClick={handleDelete}>
-            Delete
-          </button>
-          <button type="button" className="post__edit">
-            <Link to={`/posts/edit/${post?.id}`}>Edit</Link>
-          </button>
-        </>
+        {user?.uid === post?.uid && (
+          <>
+            <button
+              type="button"
+              className="post__delete"
+              onClick={handleDelete}
+            >
+              Delete
+            </button>
+            <button type="button" className="post__edit">
+              <Link to={`/posts/edit/${post?.id}`}>Edit</Link>
+            </button>
+          </>
+        )}
         <button type="button" className="post__likes">
           <AiFillHeart />
           {post?.likeCount || 0}
