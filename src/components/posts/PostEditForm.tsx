@@ -1,8 +1,7 @@
-import AuthContext from "@/components/context/AuthContext";
 import { db } from "@/firebaseApp";
 import { PostProps } from "@/pages/home";
-import { addDoc, collection, doc, getDoc, updateDoc } from "firebase/firestore";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { useCallback, useEffect, useState } from "react";
 import { FiImage } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -11,7 +10,6 @@ export default function PostEditForm() {
   const params = useParams();
   const navigate = useNavigate();
 
-  const { user } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     content: "",
     file: null,
