@@ -1,5 +1,5 @@
 import PostForm from "@/components/posts/PostForm";
-import PostBox from "@/components/PostBox";
+import PostBox from "@/components/posts/PostBox";
 import { useContext, useEffect, useState } from "react";
 import AuthContext from "@/components/context/AuthContext";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
