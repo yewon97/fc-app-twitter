@@ -1,5 +1,11 @@
 import { app } from "@/firebaseApp";
-import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  GithubAuthProvider,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -20,7 +26,7 @@ export default function SignupForm() {
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target as HTMLInputElement;
     if (name === "email") {
       setForm((prev) => ({ ...prev, email: value }));
 
@@ -66,6 +72,28 @@ export default function SignupForm() {
     }
   };
 
+  const handleSocialLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    const { name } = e.currentTarget;
+
+    const auth = getAuth(app);
+    const provider =
+      name === "google" ? new GoogleAuthProvider() : new GithubAuthProvider();
+
+    await signInWithPopup(
+      auth,
+      provider as GithubAuthProvider | GoogleAuthProvider,
+    )
+      .then(() => {
+        navigate("/");
+        toast.success("로그인 되었습니다.");
+      })
+      .catch((error) => {
+        console.log(error);
+        const errorMessage = error?.message;
+        toast.error(errorMessage);
+      });
+  };
+
   return (
     <form onSubmit={handleSubmit} className="form form--lg">
       <div className="form__title">회원가입</div>
@@ -102,7 +130,6 @@ export default function SignupForm() {
           onChange={handleChange}
         />
       </div>
-
       {/* 만약 에러가 있다면 */}
       {error && error?.length > 0 && (
         <div className="form__block">
@@ -111,7 +138,6 @@ export default function SignupForm() {
           </div>
         </div>
       )}
-
       <div className="form__block">
         계정이 있으신가요?
         <Link to="/users/login" className="form__link">
@@ -125,6 +151,28 @@ export default function SignupForm() {
           disabled={!!error && error.length > 0}
         >
           회원가입
+        </button>
+      </div>
+      <div className="form__block">
+        <button
+          type="button"
+          name="google"
+          className="form__btn--google"
+          disabled={!!error && error.length > 0}
+          onClick={handleSocialLogin}
+        >
+          구글 회원가입
+        </button>
+      </div>
+      <div className="form__block">
+        <button
+          type="button"
+          name="github"
+          className="form__btn--github"
+          disabled={!!error && error.length > 0}
+          onClick={handleSocialLogin}
+        >
+          깃허브 회원가입
         </button>
       </div>
     </form>
