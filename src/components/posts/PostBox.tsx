@@ -5,9 +5,10 @@ import { FaRegComment } from "react-icons/fa";
 import { PostProps } from "@/pages/home";
 import AuthContext from "@/components/context/AuthContext";
 import { useContext } from "react";
-import { db } from "@/firebaseApp";
+import { db, storage } from "@/firebaseApp";
 import { deleteDoc, doc } from "firebase/firestore";
 import { toast } from "react-toastify";
+import { ref, deleteObject } from "firebase/storage";
 
 interface PostBoxProps {
   post: PostProps;
@@ -16,9 +17,19 @@ interface PostBoxProps {
 export default function PostBox({ post }: PostBoxProps) {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const imageRef = ref(storage, post?.imageUrl);
 
   const handleDelete = async () => {
     if (window.confirm("정말 삭제하시겠습니까?")) {
+      // firebase 스토리지 & firebase store는 별개의 서비스
+      // firebase storage에서 이미지 URL 먼저 지워야함
+
+      if (post?.imageUrl) {
+        deleteObject(imageRef).catch((error) => {
+          console.log(error);
+        });
+      }
+
       await deleteDoc(doc(db, "posts", post?.id));
       toast.success("게시글을 삭제했습니다.");
       navigate("/");
