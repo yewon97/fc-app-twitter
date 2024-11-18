@@ -42,7 +42,6 @@ export default function PostForm() {
     const key = `${user?.uid}/${uuidv4()}`;
     const storageRef = ref(storage, key);
     e.preventDefault();
-    console.log("formData.file: ", formData.file);
 
     try {
       // 이미지 먼저 업로드
@@ -54,7 +53,6 @@ export default function PostForm() {
           "data_url",
         );
         imageUrl = await getDownloadURL(uploadTask.ref);
-        console.log("imageUrl: ", imageUrl);
       }
 
       // 업로드 된 이미지의 download url 업데이트
