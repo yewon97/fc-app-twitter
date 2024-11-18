@@ -1,9 +1,11 @@
 import AuthContext from "@/components/context/AuthContext";
-import { db } from "@/firebaseApp";
+import { db, storage } from "@/firebaseApp";
 import { addDoc, collection } from "firebase/firestore";
+import { ref, uploadString, getDownloadURL } from "firebase/storage";
 import { useContext, useState } from "react";
 import { FiImage } from "react-icons/fi";
 import { toast } from "react-toastify";
+import { v4 as uuidv4 } from "uuid";
 
 export default function PostForm() {
   const { user } = useContext(AuthContext);
@@ -11,6 +13,7 @@ export default function PostForm() {
     content: "",
     file: null,
   });
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const [hashtag, setHashtag] = useState("");
   const [hashtags, setHashtags] = useState<string[]>([]);
@@ -18,14 +21,43 @@ export default function PostForm() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      console.log(file);
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(file);
+      fileReader.onloadend = (e) => {
+        const { result } = e.currentTarget as FileReader;
+        setFormData({
+          ...formData,
+          file: result as string | null as any,
+        });
+      };
     }
   };
 
+  const handleClearFile = () => {
+    setFormData({ ...formData, file: null });
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    setIsSubmitting(true);
+    const key = `${user?.uid}/${uuidv4()}`;
+    const storageRef = ref(storage, key);
     e.preventDefault();
+    console.log("formData.file: ", formData.file);
 
     try {
+      // 이미지 먼저 업로드
+      let imageUrl = "";
+      if (formData.file) {
+        const uploadTask = await uploadString(
+          storageRef,
+          formData.file,
+          "data_url",
+        );
+        imageUrl = await getDownloadURL(uploadTask.ref);
+        console.log("imageUrl: ", imageUrl);
+      }
+
+      // 업로드 된 이미지의 download url 업데이트
       await addDoc(collection(db, "posts"), {
         content: formData.content,
         file: formData.file,
@@ -37,6 +69,7 @@ export default function PostForm() {
           minute: "2-digit",
           second: "2-digit",
         }),
+        imageUrl: imageUrl,
       });
 
       setFormData({
@@ -47,6 +80,7 @@ export default function PostForm() {
       setHashtag("");
 
       toast.success("게시물이 등록되었습니다.");
+      setIsSubmitting(false);
     } catch (error) {
       console.log(error);
     }
@@ -113,18 +147,40 @@ export default function PostForm() {
         />
       </div>
       <div className="post-form__submit-area">
-        <label htmlFor="file-input" className="post-form__file">
-          <FiImage className="post-form__file-icon" />
-        </label>
-        <input
-          type="file"
-          name="file-input"
-          id="file-input"
-          className="hidden"
-          accept="image/*"
-          onChange={handleFileUpload}
-        />
-        <button type="submit" className="post-form__submit-btn">
+        <div className="post-form__image-area">
+          <label htmlFor="file-input" className="post-form__file">
+            <FiImage className="post-form__file-icon" />
+          </label>
+          <input
+            type="file"
+            name="file-input"
+            id="file-input"
+            className="hidden"
+            accept="image/*"
+            onChange={handleFileUpload}
+          />
+          {formData.file && (
+            <div className="post-form__attachment">
+              <img
+                src={formData.file}
+                alt="uploaded"
+                className="post-form__image"
+              />
+              <button
+                type="button"
+                className="post-form__clear-btn"
+                onClick={handleClearFile}
+              >
+                Clear
+              </button>
+            </div>
+          )}
+        </div>
+        <button
+          type="submit"
+          className="post-form__submit-btn"
+          disabled={isSubmitting}
+        >
           Tweet
         </button>
       </div>
