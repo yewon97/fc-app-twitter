@@ -222,6 +222,12 @@ body {
     gap: 8px;
   }
 
+  &__image {
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+  }
+
   &__attachment {
     display: flex;
     align-items: end;

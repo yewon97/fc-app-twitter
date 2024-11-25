@@ -58,7 +58,6 @@ export default function PostForm() {
       // 업로드 된 이미지의 download url 업데이트
       await addDoc(collection(db, "posts"), {
         content: formData.content,
-        file: formData.file,
         uid: user?.uid,
         email: user?.email,
         hashtags: hashtags,
